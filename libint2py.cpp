@@ -145,11 +145,12 @@ extern "C"{
     
       
     vector<Atom> read_py_atoms(PyObject* py_molecule){
-        // In libint the default unit for length is bohr,
+        // In libint the default unit for length is Bohr, e.g. a.u.
         // but the commonly used unit for length is angstrom.
-        // Therefore we have to convert the unit when reading the coordinates.
+        // Therefore we have to pay attention to converting the unit when reading the coordinates.
+        // Here we assume that the python program has converted all length to Bohr.
         // the 2010 CODATA reference set, available at DOI 10.1103/RevModPhys.84.1527
-        const double bohr_to_angstrom = 0.52917721092;
+        //const double bohr_to_angstrom = 0.52917721092;
 
         vector<Atom> atoms;
         int n = PyList_Size(py_molecule);
@@ -159,9 +160,9 @@ extern "C"{
             PyObject* py_atom = PyList_GetItem(py_molecule,i);
             Atom atom;
             atom.atomic_number = (int)PyLong_AsLong(PyList_GetItem(py_atom,0));
-            atom.x = PyFloat_AsDouble(PyList_GetItem(py_atom,1)) / bohr_to_angstrom;
-            atom.y = PyFloat_AsDouble(PyList_GetItem(py_atom,2)) / bohr_to_angstrom;
-            atom.z = PyFloat_AsDouble(PyList_GetItem(py_atom,3)) / bohr_to_angstrom;
+            atom.x = PyFloat_AsDouble(PyList_GetItem(py_atom,1));
+            atom.y = PyFloat_AsDouble(PyList_GetItem(py_atom,2));
+            atom.z = PyFloat_AsDouble(PyList_GetItem(py_atom,3));
             //cout << atom.atomic_number << "\t" << atom.x << "\t\t" << atom.y << "\t\t"  << atom.z << endl;
             atoms.push_back(atom);
         }
