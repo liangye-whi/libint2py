@@ -1,6 +1,6 @@
-LIBINT_INSTALL_PATH :=/usr/local/libint/2.4.0-beta.3
-LIBINT_BASIS_PATH :=\"/usr/local/libint/2.4.0-beta.3/share/libint/2.4.0-beta.3/basis\"
-EIGEN_INSTALL_PATH :=/home/joshua/Software/libint/eigen
+LIBINT_INSTALL_PATH :=/usr/local/libint/2.2.0
+LIBINT_BASIS_PATH :=\"/usr/local/libint/2.2.0/share/libint/2.2.0/basis\"
+EIGEN_INSTALL_PATH :=/root/Software/libint/eigen
 PYTHON_INCLUDE_PATH :=/usr/include/python3.5
 
 CXX := g++ -std=c++11
