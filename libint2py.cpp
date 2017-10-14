@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 // Eigen matrix algebra library
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
@@ -192,6 +193,15 @@ extern "C"{
       // (ab|cd) contributes. STOP READING and try to figure it out yourself. (to check your answer see below)
     
       // loop over permutationally-unique set of shells
+      const auto n_unique_eri = n + n*(n-1)*2 + n*(n-1)*(n-2) + n*(n-1)*(n-2)*(n-3)/8;
+      //cout<<n<<"++++++++++++++++++++++++++++++++"<<endl;
+      //cout << n_unique_eri <<"++++++++++++++++++++++++++++++++"<<endl;
+      struct eri_pair{
+	double value;
+  	unsigned long long weigh;
+      };	
+      eri_pair eri_store[n_unique_eri];
+      int ctr = 0;
       for(auto s1=0; s1!=shells.size(); ++s1) {
     
         auto bf1_first = shell2bf[s1]; // first basis function in this shell
@@ -207,8 +217,7 @@ extern "C"{
             auto bf3_first = shell2bf[s3];
             auto n3 = shells[s3].size();
     
-            const auto s4_max = (s1 == s3) ? s2 : s3;
-            for(auto s4=0; s4<=s4_max; ++s4) {
+            for(auto s4=0; s4<=s3; ++s4) {
     
               auto bf4_first = shell2bf[s4];
               auto n4 = shells[s4].size();
@@ -240,15 +249,22 @@ extern "C"{
               // 2) each permutationally-unique integral (shell set) must be scaled by its degeneracy,
               //    i.e. the number of the integrals/sets equivalent to it
               // 3) the end result must be symmetrized
-	      int ctr = 0;
               for(auto f1=0, f1234=0; f1!=n1; ++f1) {
                 for(auto f2=0; f2!=n2; ++f2) {
                   for(auto f3=0; f3!=n3; ++f3) {
                     for(auto f4=0; f4!=n4; ++f4, ++f1234) {
+			    if(bf1_first+f1 < bf2_first+f2)
+				    continue;
+			    if(bf3_first+f3 < bf4_first+f4)
+				    continue;
+			    if(bf1_first+f1 < bf3_first+f3)
+				    continue;
+			    if(bf1_first+f1 == bf3_first+f3 and bf2_first+f2 < bf4_first+f4)
+				    continue;
+   		      //cout << " ( " << bf1_first+f1 << " " << bf2_first+f2 << " | " << bf3_first+f3 << " " << bf4_first+f4 << " ) = " << buf_1234[((f1*n2+f2)*n3+f3)*n4+f4] << endl;
+		      eri_store[ctr].value = buf_1234[f1234];
+		      eri_store[ctr].weigh = (((bf1_first+f1)*n + bf2_first+f2)*n+ bf3_first+f3)*n + bf4_first+f4;
 		      ctr ++;
-   		      cout << " ( " << bf1_first+f1 << " " << bf2_first+f2 << " | " << bf3_first+f3 << " " << bf4_first+f4 << " ) = " << buf_1234[((f1*n2+f2)*n3+f3)*n4+f4] << endl;
-		      PyList_Append(PyResult,PyFloat_FromDouble(buf_1234[f1234]));
-    
                     }
                   }
                 }
@@ -258,6 +274,10 @@ extern "C"{
           }
         }
       }
+      sort(eri_store,eri_store+n_unique_eri,[](eri_pair a, eri_pair b)->bool{return a.weigh < b.weigh;});
+
+      for(int i=0;i<n_unique_eri;i++)
+	      PyList_Append(PyResult,PyFloat_FromDouble(eri_store[i].value));
     
       return PyResult;
     }
