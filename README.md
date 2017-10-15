@@ -11,3 +11,7 @@ cooperating with LIBINT correctly.
 - The python API `molecule` is also very simple.
 
 - The RHF program has a inefficient procedure to deal with the eri. Perhaps a better algorithm exists.
+
+###### Next step:
+
+- Finish the first stable version of libint2py. Separathe the HF program out.
